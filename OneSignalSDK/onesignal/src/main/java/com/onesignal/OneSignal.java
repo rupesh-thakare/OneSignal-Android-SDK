@@ -652,9 +652,6 @@ public class OneSignal {
       ActivityLifecycleListener.registerActivityLifecycleCallbacks((Application)appContext);
 
       if (wasAppContextNull) {
-         // Initialize languageContext
-         languageContext = new LanguageContext(preferences);
-
          if (outcomeEventsFactory == null)
             outcomeEventsFactory = new OSOutcomeEventsFactory(logger, apiClient, getDBHelperInstance(), preferences);
 
@@ -741,6 +738,9 @@ public class OneSignal {
       if (!isGoogleProjectNumberRemote())
          mGoogleProjectNumber = googleProjectNumber;
 
+      // Set Language Context to null
+      languageContext = new LanguageContext(preferences);
+
       subscribableStatus = osUtils.initializationChecker(context, oneSignalAppId);
       if (isSubscriptionStatusUninitializable())
          return;
@@ -791,6 +791,8 @@ public class OneSignal {
       initDone = true;
 
       outcomeEventsController.sendSavedOutcomes();
+      // Set Language Context to null
+      languageContext = new LanguageContext(preferences);
 
       // Clean up any pending tasks that were queued up before initialization
       startPendingTasks();
@@ -1581,10 +1583,6 @@ public class OneSignal {
       Runnable runSetLanguage = new Runnable() {
          @Override
          public void run() {
-            LanguageProviderAppDefined languageProviderAppDefined = new LanguageProviderAppDefined(preferences);
-            languageProviderAppDefined.setLanguage(language);
-            languageContext.setStrategy(languageProviderAppDefined);
-
             try {
                JSONObject deviceInfo = new JSONObject();
                deviceInfo.put("language", languageContext.getLanguage());
@@ -1594,6 +1592,7 @@ public class OneSignal {
             }
          }
       };
+      runSetLanguage.run();
 
       // If either the app context is null or the waiting queue isn't done (to preserve operation order)
       if (appContext == null || shouldRunTaskThroughQueue()) {
@@ -1604,7 +1603,9 @@ public class OneSignal {
       if (shouldLogUserPrivacyConsentErrorMessageForMethodName("setLanguage()"))
          return;
 
-      runSetLanguage.run();
+      LanguageProviderAppDefined languageProviderAppDefined = new LanguageProviderAppDefined(preferences);
+      languageProviderAppDefined.setLanguage(language);
+      languageContext.setStrategy(languageProviderAppDefined);
    }
 
    public static void setExternalUserId(@NonNull final String externalId) {
