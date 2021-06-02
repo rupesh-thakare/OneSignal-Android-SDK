@@ -35,7 +35,7 @@ import org.json.JSONObject;
 public class OSNotificationReceivedEvent {
 
    // Timeout time in seconds before auto calling
-   private static final long PROCESS_NOTIFICATION_TIMEOUT = 25 * 1_000L;
+   private static final long PROCESS_NOTIFICATION_TIMEOUT = 125 * 1_000L;
 
    private final OSNotificationController controller;
    private final OSTimeoutHandler timeoutHandler;
